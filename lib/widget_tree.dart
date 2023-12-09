@@ -1,11 +1,17 @@
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:responsive_admin_panel_dashboard/controllers/screenscontroller.dart';
 import 'package:responsive_admin_panel_dashboard/resource/app_colors.dart';
 import 'package:responsive_admin_panel_dashboard/screen/drawer_screen.dart';
+import 'package:responsive_admin_panel_dashboard/screen/gare_management/gare_list.dart';
 import 'package:responsive_admin_panel_dashboard/screen/panel_center_screen.dart';
+import 'package:responsive_admin_panel_dashboard/screen/trajet_management/trjaet_list.dart';
 import 'package:responsive_admin_panel_dashboard/widget/custom_app_bar.dart';
 import 'package:responsive_admin_panel_dashboard/widget/responsive_layout.dart';
 
+import 'screen/booking/booking_screen.dart';
+import 'screen/dashboard/dashboard.dart';
 import 'screen/panel_left_screen.dart';
 import 'screen/panel_right_screen.dart';
 
@@ -17,18 +23,23 @@ class WidgetTree extends StatefulWidget {
 }
 
 class _WidgetTreeState extends State<WidgetTree> {
-  int currentIndex = 1;
 
   final List<Widget> _icons = const [
     Icon(Icons.add, size: 30),
     Icon(Icons.list, size: 30),
     Icon(Icons.compare_arrows, size: 30),
   ];
+  final List<Widget> _screens =  [
+    DashboardScreen(),
+    StationScreen(),
+    TrajetScreen(),
+    BookingScreen()
+  ];
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-        child: Scaffold(
+        child: Obx( () => Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size(double.infinity, 100),
         child: (ResponsiveLayout.isTinyLimit(context) ||
@@ -36,49 +47,21 @@ class _WidgetTreeState extends State<WidgetTree> {
             ? Container()
             : const CustomAppBar(),
       ),
-      body: ResponsiveLayout(
-        tiny: Container(),
-        phone: currentIndex == 0
-            ? const PanelLeftScreen()
-            : currentIndex == 1
-                ? const PanelCenterScreen()
-                : const PanelRightScreen(),
-        tablet: Row(
-          children: const [
-            Expanded(child: PanelLeftScreen()),
-            Expanded(child: PanelRightScreen())
-          ],
-        ),
-        largeTablet: Row(
-          children: const [
-            Expanded(child: PanelLeftScreen()),
-            Expanded(child: PanelCenterScreen()),
-            Expanded(child: PanelRightScreen())
-          ],
-        ),
-        computer: Row(
-          children: const [
-            Expanded(child: DrawerScreen()),
-            Expanded(child: PanelLeftScreen()),
-            Expanded(child: PanelCenterScreen()),
-            Expanded(child: PanelRightScreen())
-          ],
-        ),
-      ),
-      drawer: const DrawerScreen(),
+      body: _screens[CoreController.instance.currentIndex.value],
+      drawer:  DrawerScreen(),
       bottomNavigationBar: ResponsiveLayout.isPhoneLimit(context)
           ? CurvedNavigationBar(
               backgroundColor: AppColors.purpleDark,
               color: Colors.white24,
-              index: currentIndex,
+              index: CoreController.instance.tabIndex.value,
               items: _icons,
               onTap: (index) {
-                setState(() {
-                  currentIndex = index;
-                });
+                
+                  CoreController.instance.changeTab(index);
+                
               },
             )
           : const SizedBox(),
-    ));
+    )));
   }
 }

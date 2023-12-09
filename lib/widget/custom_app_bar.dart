@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:get/route_manager.dart';
+import 'package:responsive_admin_panel_dashboard/controllers/auth_controller.dart';
+import 'package:responsive_admin_panel_dashboard/controllers/data_controller.dart';
+import 'package:responsive_admin_panel_dashboard/controllers/screenscontroller.dart';
 import 'package:responsive_admin_panel_dashboard/resource/app_colors.dart';
 import 'package:responsive_admin_panel_dashboard/resource/app_padding.dart';
+import 'package:responsive_admin_panel_dashboard/utils/contants/colors.dart';
 import 'responsive_layout.dart';
 
-List<String> _buttonNames = ["Overview", "Revenue", "Sales", "Control"];
+List<String> _buttonNames = ["Apercu", "Revenu", "Vente", "Gestions"];
 int _currentSelectedButton = 0;
 
 class CustomAppBar extends StatefulWidget {
@@ -32,8 +37,8 @@ class _CustomAppBarState extends State<CustomAppBar> {
               )
             ], shape: BoxShape.circle),
             child: CircleAvatar(
-              backgroundColor: Colors.deepPurple,
-              radius: 30,
+              backgroundColor: primaryColor,
+              radius: 50,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(50),
                 child: Image.asset(
@@ -59,6 +64,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
                   onPressed: () {
                     setState(() {
                       _currentSelectedButton = index;
+                      CoreController.instance!.changeIndex(index);
                     });
                   },
                   child: Padding(
@@ -125,8 +131,10 @@ class _CustomAppBarState extends State<CustomAppBar> {
         IconButton(
           color: Colors.white,
           iconSize: 30,
-          onPressed: () {},
-          icon: const Icon(Icons.search),
+          onPressed: () {
+            DataController.instance.refreshUI();
+          },
+          icon: const Icon(Icons.refresh),
         ),
         Stack(
           children: [
@@ -151,22 +159,50 @@ class _CustomAppBarState extends State<CustomAppBar> {
           ],
         ),
         if (!ResponsiveLayout.isPhoneLimit(context))
-          Container(
-            margin: const EdgeInsets.all(AppPadding.P10),
-            height: double.infinity,
-            decoration: const BoxDecoration(boxShadow: [
-              BoxShadow(
-                color: Colors.black45,
-                offset: Offset(0, 0),
-                spreadRadius: 1,
-                blurRadius: 10,
-              )
-            ], shape: BoxShape.circle),
-            child: const CircleAvatar(
-              backgroundColor: AppColors.orange,
-              radius: 35,
-              backgroundImage: AssetImage(
-                "assets/images/profile.png",
+          InkWell(
+            onTap: () {
+              showMenu(context: context, position: RelativeRect.fromLTRB(Get.width-50, 50, 0, 20), items: [
+                PopupMenuItem(
+                  onTap: (() {
+                    AuthController.instance.logout();
+                  }),
+                  child: Row(
+                    children: [
+                      Icon(Icons.logout),
+                      Text("Logout"),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  onTap: (() {
+                    DataController.instance.getCompany();
+                  }),
+                  child: Row(
+                    children: [
+                      Icon(Icons.person),
+                      Text("Profile"),
+                    ],
+                  ),
+                ),
+              ]);
+            },
+            child: Container(
+              margin: const EdgeInsets.all(AppPadding.P10),
+              height: double.infinity,
+              decoration: const BoxDecoration(boxShadow: [
+                BoxShadow(
+                  color: Colors.black45,
+                  offset: Offset(0, 0),
+                  spreadRadius: 1,
+                  blurRadius: 10,
+                )
+              ], shape: BoxShape.circle),
+              child: const CircleAvatar(
+                backgroundColor: AppColors.orange,
+                radius: 35,
+                backgroundImage: AssetImage(
+                  "assets/images/profile.png",
+                ),
               ),
             ),
           ),
