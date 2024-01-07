@@ -1,5 +1,4 @@
-import 'dart:ffi';
-import 'dart:io';
+import 'dart:async';
 
 import 'package:date_picker_timeline/date_picker_widget.dart';
 import 'package:flutter/cupertino.dart';
@@ -10,6 +9,7 @@ import 'package:responsive_admin_panel_dashboard/controllers/auth_controller.dar
 import 'package:responsive_admin_panel_dashboard/controllers/data_controller.dart';
 import 'package:responsive_admin_panel_dashboard/controllers/screenscontroller.dart';
 import 'package:responsive_admin_panel_dashboard/models/stock_ticket.dart';
+import 'package:responsive_admin_panel_dashboard/models/ticket.dart';
 import 'package:responsive_admin_panel_dashboard/screen/drawer_screen.dart';
 import 'package:responsive_admin_panel_dashboard/utils/contants/textstyles.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -20,16 +20,15 @@ class BookingScreen extends StatelessWidget {
   RxInt selected_horaires = 0.obs;
   RxInt selected_trajet = 1.obs;
   BookingScreen({super.key});
-  RxString selected_day =
-      DateTime.now().toString()
-          .obs;
+  RxString selected_day = DateTime.now().toString().obs;
   RxList<String> selected_places = <String>[].obs;
   String? selectedValue;
-  DatePickerController datePickerController =DatePickerController();
+  DatePickerController datePickerController = DatePickerController();
   RxBool isloading = false.obs;
   RxBool showCustomerdetails = false.obs;
   RxList<DateTime> inactiveDates = <DateTime>[].obs;
   RxList<DateTime> activeDates = <DateTime>[].obs;
+  List<Map> clientData = <Map>[];
   StockTicket stock = StockTicket(
       id: "",
       userCreated: AuthController.instance.user.value!.id!,
@@ -42,8 +41,9 @@ class BookingScreen extends StatelessWidget {
       takenPlaces: {});
 
   bool checkifDayisInListOfDepartureDays(
-    //Fonction retur true si le jour est dans la liste des jours autoriser pour les depart
-      DateTime date, List<String> prohibitedDays) {
+      //Fonction retur true si le jour est dans la liste des jours autoriser pour les depart
+      DateTime date,
+      List<String> prohibitedDays) {
     var datewithindex = {
       "lundi": 1,
       "mardi": 2,
@@ -78,7 +78,6 @@ class BookingScreen extends StatelessWidget {
         activeDates.clear();
         activeDates.refresh();
 
-
         print(selected_horaires.value);
       }
     });
@@ -91,26 +90,24 @@ class BookingScreen extends StatelessWidget {
         for (int i = 0; i < 15; i++) {
           DateTime date = DateTime.now().add(Duration(days: i));
           var days = (DataController.instance.trajets
-                  .firstWhere((element) => element.id == selected_trajet.value)
-                  .horaires!
-                  .firstWhere(
-                      (element) => element.id == selected_horaires.value)
-                  .jourDeDisponibilite);
-          if (checkifDayisInListOfDepartureDays(date,days)) {
+              .firstWhere((element) => element.id == selected_trajet.value)
+              .horaires!
+              .firstWhere((element) => element.id == selected_horaires.value)
+              .jourDeDisponibilite);
+          if (checkifDayisInListOfDepartureDays(date, days)) {
             activeDates.add(date);
-          }else{
+          } else {
             inactiveDates.add(date);
-            
           }
-          
         }
         activeDates.refresh();
         inactiveDates.refresh();
 
         // selected_day.value =activeDates.first.toString();
-        if(activeDates.isNotEmpty){
-              datePickerController.setDateAndAnimate(activeDates.first);
-
+        if (activeDates.isNotEmpty) {
+          Timer(Duration(seconds: 2), () {
+            datePickerController.setDateAndAnimate(activeDates.first);
+          });
         }
         isloading.value = true;
       }
@@ -155,10 +152,20 @@ class BookingScreen extends StatelessWidget {
     }
 
     PanelCenterScreen() {
-      return Obx(() => DataController.instance.trajets
+      return Obx(() {
+       var horaire = DataController.instance.trajets
+                        .firstWhere(
+                            (element) => element.id == selected_trajet.value)
+                        .horaires!;
+                        horaire.sort((a,b)=> (TimeOfDay(hour: int.parse(a.heureDepart.toUpperCase().split("H")[0]), minute: int.parse( a.heureDepart.toUpperCase().split("H")[1])).hour * 60 +TimeOfDay(hour: int.parse(a.heureDepart.toUpperCase().split("H")[0]), minute: int.parse(a.heureDepart.toUpperCase().split("H")[1])).minute).compareTo((TimeOfDay(hour: int.parse(b.heureDepart.toUpperCase().split("H")[0]), minute: int.parse(b.heureDepart.toUpperCase().split("H")[1])).hour * 60 +TimeOfDay(hour: int.parse(b.heureDepart.toUpperCase().split("H")[0]), minute: int.parse(b.heureDepart.toUpperCase().split("H")[1])).minute)) );
+      return DataController.instance.trajets
               .firstWhere((element) => element.id == selected_trajet.value)
-              .horaires!
-              .isNotEmpty
+              .horaires !=null 
+              &&
+              DataController.instance.trajets
+              .firstWhere((element) => element.id == selected_trajet.value)
+              .horaires!.isNotEmpty
+              
           ? Container(
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
               height: Get.height,
@@ -176,16 +183,11 @@ class BookingScreen extends StatelessWidget {
                     const SizedBox(
                       height: 10,
                     ),
-                    ...DataController.instance.trajets
-                        .firstWhere(
-                            (element) => element.id == selected_trajet.value)
-                        .horaires!
-                        .map((e) => Obx(() => RadioListTile(
+                    ...horaire.map((e) => Obx(() => RadioListTile(
                               value: e.id,
                               groupValue: selected_horaires.value,
                               onChanged: (v) {
                                 selected_horaires.value = e.id;
-                                
                               },
                               title: Text(e.heureDepart.toUpperCase()),
                             )))
@@ -193,11 +195,21 @@ class BookingScreen extends StatelessWidget {
                 ),
               ),
             )
-          : SizedBox());
+          : SizedBox(
+            child: Column(
+              children: [
+                Text("Aucun horaire disponible pour cette destination", style: mediumTitle),
+                const SizedBox(height: 10,),
+                Text("Veuillez selectionner une autre destination", style: mediumTitle),
+              ],
+            
+            ),
+          );});
     }
 
     PanelRightScreen() {
-      return Obx(() => selected_horaires.value != 0
+      return Obx(() => selected_horaires.value != 0 &&
+              showCustomerdetails.value == false
           ? Container(
               padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
               color: Colors.white,
@@ -213,13 +225,13 @@ class BookingScreen extends StatelessWidget {
                     width: Get.width * 0.25,
                     height: 85,
                     child: Obx(() => DatePicker(
-                      
                           DateTime.now(),
                           // activeDates: activeDates.value,
                           inactiveDates: inactiveDates.value,
                           deactivatedColor: Colors.red,
                           controller: datePickerController,
-                          initialSelectedDate: DateTime.parse(selected_day.value) ,
+                          initialSelectedDate:
+                              DateTime.parse(selected_day.value),
                           selectionColor: Colors.black,
                           selectedTextColor: Colors.white,
                           daysCount: 30,
@@ -231,7 +243,7 @@ class BookingScreen extends StatelessWidget {
                             selected_day.refresh();
                             isloading.value = true;
                           },
-                          height: 80,
+                          height: 90,
                         )),
                   ),
                   const SizedBox(
@@ -302,6 +314,14 @@ class BookingScreen extends StatelessWidget {
                                       dateValidity: DateTime.parse(selected_day.value),
                                       takenPlaces: {})
                                   : StockTicket.fromJson(snapshot.data!.firstWhere((element) => element['horaires'] == selected_horaires.value));
+                              stock.takenPlaces.forEach((key, value) {
+                                if (value != 0 ) {
+                                  Timer(Duration(seconds: 2), () {
+                                                                      selected_places.remove(key);
+
+                                  });
+                                }
+                              });
                               print("Stock id ${stock.id}");
                               return GridView.builder(
                                   itemCount: stock.stockInitial,
@@ -380,7 +400,7 @@ class BookingScreen extends StatelessWidget {
                       children: [
                         ...selected_places.map((element) => Chip(
                                 label: Text(
-                              element,
+                              (int.parse(element) +1 ).toString(),
                               style: mediumTitle.copyWith(color: Colors.white),
                             )))
                       ],
@@ -398,7 +418,17 @@ class BookingScreen extends StatelessWidget {
                               padding: EdgeInsets.symmetric(
                                   horizontal: 15, vertical: 5),
                               onPressed: () async {
-                                if (false) {
+                                showCustomerdetails.value = true;
+                                clientData.clear();
+                                selected_places.forEach((element) {
+                                   clientData.add({
+                                  "numero": TextEditingController(),
+                                  "name": TextEditingController(),
+                                  "cnib": TextEditingController(),
+                                });
+                                });
+                               
+                                if (DataController.instance.compagnie.value!.nomOfClientRequired == true) {
                                   showCustomerdetails.value = true;
                                 } else {
                                   //case confirmed registration
@@ -416,6 +446,48 @@ class BookingScreen extends StatelessWidget {
                                         .upsert(stock.toJson())
                                         .select();
                                     print("upsert rs " + dt.toString());
+                                    stock = StockTicket.fromJson(dt.first);
+                                    for (var place in selected_places) {
+                                      
+          
+                                    var pass = await Supabase.instance.client
+                                        .from("tickets")
+                                        .insert(Ticket(
+                                                id: 0,
+                                                userCreated: AuthController
+                                                    .instance.user.value!.id!,
+                                                dateCreated: DateTime.now(),
+                                                dateUpdated: DateTime.now(),
+                                                stockId: stock.id!,
+                                                placeNumber: selected_places
+                                                    .length,
+                                                trajetId: selected_trajet.value,
+                                                prix: DataController.instance
+                                                    .trajets
+                                                    .firstWhere((element) =>
+                                                        element.id ==
+                                                        selected_trajet.value)
+                                                    .prix!,
+                                                dateDepart: selected_day.value
+                                                        .toString()
+                                                        .isNotEmpty
+                                                    ? DateTime.parse(
+                                                        selected_day.value)
+                                                    : DateTime.now(),
+                                                heureDepart: DataController.instance.trajets
+                                                    .firstWhere((element) =>
+                                                        element.id ==
+                                                        selected_trajet.value)
+                                                    .horaires!
+                                                    .firstWhere((element) =>
+                                                        element.id ==
+                                                        selected_horaires
+                                                            .value)
+                                                    .heureDepart
+                                                )
+                                            .toJson())
+                                        .select();
+                                    }
                                     selected_places.clear();
                                     EasyLoading.dismiss();
                                   } else {
@@ -429,7 +501,258 @@ class BookingScreen extends StatelessWidget {
                 ],
               ),
             )
-          : SizedBox());
+          : showCustomerdetails.value == false
+              ? SizedBox()
+              : Container(
+                  width: Get.width,
+                  height: Get.height,
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+                  color: Colors.white,
+                  child: Obx(() => SingleChildScrollView(
+                    child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text("Information du client", style: mediumTitle),
+                                IconButton(onPressed: (){
+                                  showCustomerdetails.value = false;
+                                  EasyLoading.dismiss();
+                                  selected_places.clear();
+                                }, icon: Icon(Icons.close))
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            ...selected_places.map((e) => Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 10),
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(20),
+                                      color: Colors.grey[200]),
+                                      margin: EdgeInsets.symmetric(vertical: 10),
+                              child: Column(
+                                 
+                                    children: [
+                                      SizedBox(
+                                        width: Get.width,
+                                        child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              SizedBox(
+                                                width: 225,
+                                                child: TextField(
+                                                  controller: clientData[selected_places.indexOf(e)]["name"],
+                                                  decoration: InputDecoration(
+                                                      hintText: "Nom du client siege ${ int.parse(e) +1 }",
+                                                      hintStyle: mediumTitle,
+                                                      border: OutlineInputBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                20),
+                                                      ),
+                                                      errorBorder:
+                                                          OutlineInputBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                20),
+                                                        borderSide: BorderSide(
+                                                          color: Colors.red,
+                                                        ),
+                                                      ),
+                                                      focusedBorder:
+                                                          OutlineInputBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                20),
+                                                        borderSide: BorderSide(
+                                                          color: Colors.blue,
+                                                        ),
+                                                      ),
+                                                      labelText: "Nom du client siege ${ int.parse(e) +1 }"),
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                width: 225,
+                                                child: TextField(
+                                                  controller: clientData[selected_places.indexOf(e)]["numero"],
+                                                  decoration: InputDecoration(
+                                                      hintText:
+                                                          "Telephone du client",
+                                                      hintStyle: mediumTitle,
+                                                      border: OutlineInputBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                20),
+                                                      ),
+                                                      errorBorder:
+                                                          OutlineInputBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                20),
+                                                        borderSide: BorderSide(
+                                                          color: Colors.red,
+                                                        ),
+                                                      ),
+                                                      focusedBorder:
+                                                          OutlineInputBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                20),
+                                                        borderSide: BorderSide(
+                                                          color: Colors.blue,
+                                                        ),
+                                                      ),
+                                                      labelText:
+                                                          "Telephone du client siege ${ int.parse(e) +1 }"),
+                                                ),
+                                              ),
+                                            ]),
+                                      ),
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                      TextField(
+                                        controller: clientData[selected_places.indexOf(e)]["cnib"],
+                                        decoration: InputDecoration(
+                                            hintText: "Numero CNIB/Passport",
+                                            hintStyle: mediumTitle,
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                            errorBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                              borderSide: BorderSide(
+                                                color: Colors.red,
+                                              ),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                              borderSide: BorderSide(
+                                                color: Colors.blue,
+                                              ),
+                                            ),
+                                            labelText: "Passport /CNIB du client siege ${ int.parse(e) +1 }"),
+                                      ),
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                    ],
+                                  ),
+                            )),
+                            CupertinoButton(
+                                child: Text(
+                                  "Passez a l'achat",
+                                  style:
+                                      mediumTitle.copyWith(color: Colors.white),
+                                ),
+                                color: Colors.green,
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 15, vertical: 5),
+                                onPressed: () async {
+                                  for (var element in selected_places) {
+                                    if (clientData[selected_places.indexOf(element)]["name"].text.isEmpty ||
+                                        clientData[selected_places.indexOf(element)]["numero"].text.isEmpty ||
+                                        clientData[selected_places.indexOf(element)]["cnib"].text.isEmpty) {
+                                      EasyLoading.showError(
+                                          "Veuillez remplir tous les champs");
+                                      return;
+                                    }
+                                  }
+                                  
+                                  //case confirmed registration
+                                    //case confirmed registration
+                                  print("for up" + stock.toJson().toString());
+                                  print("for p" + stock.id);
+                                  
+                                  if (stock.stockInitial != 0) {
+                                    EasyLoading.show();
+                                    stock.stockRestants = stock.stockRestants -
+                                        selected_places.length;
+                                    for (var element in selected_places) {
+                                      stock.takenPlaces[element] =
+                                          PlaceState.confirmed.index;
+                                    }
+                                    print(stock.toJson());
+                                    var dt ;
+                                    if(stock.id == ""){
+                                       dt = await Supabase.instance.client
+                                        .from("stock_tickets")
+                                        .insert([stock.toJson()])
+                                        .select();
+                                    }
+else{
+                                     dt = await Supabase.instance.client
+                                        .from("stock_tickets")
+                                        .update(stock.toJson())
+                                        .eq("id", stock.id)
+                                        .select();
+                                    print("upsert rs " + dt.toString());
+
+}
+                                    for (var place in selected_places) {
+                                  var clientdataextracted = {};
+
+                                      for (var element in selected_places) {
+                                    clientData[selected_places.indexOf(element)].forEach((key, value) {
+                                      clientdataextracted.addAll({key: value.text});
+                                    });
+                                  }
+          
+                                    var pass = await Supabase.instance.client
+                                        .from("tickets")
+                                        .upsert(Ticket(
+                                                id: 0,
+                                                userCreated: AuthController
+                                                    .instance.user.value!.id!,
+                                                dateCreated: DateTime.now(),
+                                                dateUpdated: DateTime.now(),
+                                                stockId: stock.id!,
+                                                placeNumber: selected_places
+                                                    .length,
+                                                trajetId: selected_trajet.value,
+                                                prix: DataController.instance
+                                                    .trajets
+                                                    .firstWhere((element) =>
+                                                        element.id ==
+                                                        selected_trajet.value)
+                                                    .prix!,
+                                                dateDepart: selected_day.value
+                                                        .toString()
+                                                        .isNotEmpty
+                                                    ? DateTime.parse(
+                                                        selected_day.value)
+                                                    : DateTime.now(),
+                                                heureDepart: DataController.instance.trajets
+                                                    .firstWhere((element) =>
+                                                        element.id ==
+                                                        selected_trajet.value)
+                                                    .horaires!
+                                                    .firstWhere((element) =>
+                                                        element.id ==
+                                                        selected_horaires
+                                                            .value)
+                                                    .heureDepart
+                                                )
+                                            .toJson())
+                                        .select();
+                                        print(pass);
+                                    }
+                                  }
+                                  showCustomerdetails.value = false;
+                                  EasyLoading.showSuccess("Achat effectuer avec succes places ${selected_places}");
+                                  selected_places.clear();
+                                  print("for up" + stock.toJson().toString());
+                                }),
+                          ],
+                        ),
+                  )),
+                ));
     }
 
     return Obx(() => ResponsiveLayout(

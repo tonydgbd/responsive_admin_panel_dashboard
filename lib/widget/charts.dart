@@ -1,5 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
+import 'package:responsive_admin_panel_dashboard/controllers/data_controller.dart';
 import 'package:responsive_admin_panel_dashboard/resource/app_colors.dart';
 
 import '../resource/app_padding.dart';
@@ -32,9 +34,7 @@ class _LineChartSample2State extends State<LineChartSample2> {
         color: AppColors.purpleLight,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         elevation: 3,
-        child: Stack(
-          children: <Widget>[
-            AspectRatio(
+        child: AspectRatio(
               aspectRatio: 1.70,
               child: Container(
                 decoration: const BoxDecoration(
@@ -49,33 +49,13 @@ class _LineChartSample2State extends State<LineChartSample2> {
                     top: 24,
                     bottom: 12,
                   ),
-                  child: LineChart(
-                    showAvg ? avgData() : mainData(),
-                  ),
+                  child: Obx(() => LineChart(
+                         mainData(),
+                      )),
                 ),
               ),
             ),
-            SizedBox(
-              width: 60,
-              height: 34,
-              child: TextButton(
-                onPressed: () {
-                  setState(() {
-                    showAvg = !showAvg;
-                  });
-                },
-                child: Text(
-                  'avg',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color:
-                        showAvg ? Colors.white.withOpacity(0.5) : Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+        
       ),
     );
   }
@@ -88,21 +68,34 @@ class _LineChartSample2State extends State<LineChartSample2> {
     );
     Widget text;
     switch (value.toInt()) {
+      case 0:
+        text = const Text('Lun', style: style);
+        break;
+      case 1:
+        text = const Text('Mar', style: style);
+        break;
       case 2:
-        text = const Text('MAR', style: style);
+        text = const Text('Mer', style: style);
+        break;
+      case 3:
+        text = const Text('Jeu', style: style);
+        break;
+      case 4:
+        text = const Text('Ven', style: style);
         break;
       case 5:
-        text = const Text('JUN', style: style);
+        text = const Text('Sam', style: style);
         break;
-      case 8:
-        text = const Text('SEP', style: style);
+      case 6:
+        text = const Text('Dim', style: style);
         break;
       default:
-        text = const Text('', style: style);
+        text = const Text('');
         break;
     }
 
     return SideTitleWidget(
+      space: 10,
       axisSide: meta.axisSide,
       child: text,
     );
@@ -117,13 +110,13 @@ class _LineChartSample2State extends State<LineChartSample2> {
     String text;
     switch (value.toInt()) {
       case 1:
-        text = '10K';
+        text = '20';
         break;
       case 3:
-        text = '30k';
+        text = '50';
         break;
       case 5:
-        text = '50k';
+        text = '70';
         break;
       default:
         return Container();
@@ -168,33 +161,81 @@ class _LineChartSample2State extends State<LineChartSample2> {
             getTitlesWidget: bottomTitleWidgets,
           ),
         ),
-        leftTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            interval: 1,
-            getTitlesWidget: leftTitleWidgets,
-            reservedSize: 42,
-          ),
-        ),
+        // leftTitles: AxisTitles(
+        //   sideTitles: SideTitles(
+        //     showTitles: true,
+        //     interval: 1,
+        //     getTitlesWidget: leftTitleWidgets,
+        //     reservedSize: 42,
+        //   ),
+        // ),
       ),
       borderData: FlBorderData(
         show: true,
         border: Border.all(color: const Color(0xff37434d)),
       ),
       minX: 0,
-      maxX: 11,
+      maxX: 7,
       minY: 0,
-      maxY: 6,
+      maxY: 100,
       lineBarsData: [
         LineChartBarData(
-          spots: const [
-            FlSpot(0, 3),
-            FlSpot(2.6, 2),
-            FlSpot(4.9, 5),
-            FlSpot(6.8, 3.1),
-            FlSpot(8, 4),
-            FlSpot(9.5, 3),
-            FlSpot(11, 4),
+          spots: [
+            FlSpot(
+                0,
+                DataController.instance.tickets
+                    .where((p0) => p0.dateCreated.isBefore(DateTime.now()))
+                    .where((p0) => p0.dateCreated.weekday == 0)
+                    .length
+                    .toDouble()),
+                    FlSpot(
+                1,
+                DataController.instance.tickets
+                    .where((p0) => p0.dateCreated.isBefore(DateTime.now()))
+                    .where((p0) => p0.dateCreated.weekday == 1)
+                    .length
+                    .toDouble()),
+                
+                    FlSpot(
+                2,
+                DataController.instance.tickets
+                    .where((p0) => p0.dateCreated.isBefore(DateTime.now()))
+                    .where((p0) => p0.dateCreated.weekday == 2)
+                    .length
+                    .toDouble()),
+                    FlSpot( 3,
+                DataController.instance.tickets
+                    .where((p0) => p0.dateCreated.isBefore(DateTime.now()))
+                    .where((p0) => p0.dateCreated.weekday == 3)
+                    .length
+                    .toDouble()),
+                    FlSpot( 4,
+                DataController.instance.tickets
+                    .where((p0) => p0.dateCreated.isBefore(DateTime.now()))
+                    .where((p0) => p0.dateCreated.weekday == 4)
+                    .length
+                    .toDouble()),
+                    FlSpot( 5,
+                DataController.instance.tickets
+                    .where((p0) => p0.dateCreated.isBefore(DateTime.now()))
+                    .where((p0) => p0.dateCreated.weekday == 5)
+                    .length
+                    .toDouble()),
+                    FlSpot( 6,
+                DataController.instance.tickets
+                    .where((p0) => p0.dateCreated.isBefore(DateTime.now()))
+                    .where((p0) => p0.dateCreated.weekday == 6)
+                    .length
+                    .toDouble()),
+
+
+
+            // FlSpot(2.6, 2),
+            // FlSpot(4.9, 5),
+            // FlSpot(6.8, 3.1),
+            // FlSpot(8, 4),
+            // FlSpot(9.5, 3),
+            // FlSpot(11, 4),
           ],
           isCurved: true,
           gradient: LinearGradient(
@@ -275,6 +316,7 @@ class _LineChartSample2State extends State<LineChartSample2> {
       lineBarsData: [
         LineChartBarData(
           spots: const [
+            // DataController.instance.tickets.where((p0) => p0.c)
             FlSpot(0, 3.44),
             FlSpot(2.6, 3.44),
             FlSpot(4.9, 3.44),
@@ -328,7 +370,7 @@ class _LineChart extends StatelessWidget {
   Widget build(BuildContext context) {
     return LineChart(
       isShowingMainData ? sampleData1 : sampleData2,
-      swapAnimationDuration: const Duration(milliseconds: 250),
+      duration: const Duration(milliseconds: 250),
     );
   }
 

@@ -1,6 +1,7 @@
 import 'package:directus/directus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/route_manager.dart';
 import 'package:responsive_admin_panel_dashboard/controllers/screenscontroller.dart';
 import 'package:responsive_admin_panel_dashboard/utils/contants/colors.dart';
@@ -18,7 +19,7 @@ class AuthScreen extends StatelessWidget {
     return  Scaffold(
       body: Stack(
         children: [
-          RiveAnimation.asset("assets/6199-12052-swift.riv",fit: BoxFit.cover,),
+          // RiveAnimation.asset("assets/6199-12052-swift.riv",fit: BoxFit.cover,),
           Center(
             child: Card(
               borderOnForeground: false,
@@ -89,11 +90,17 @@ class AuthScreen extends StatelessWidget {
                       showLoader();
                       // var res=await CoreController.instance.sdk.items("User").readMany();
                       // print(res.data);
-                       await DirectusCoreSingleton.instance.auth.login(email: "test@test.com", password: "12345678");
+                       await DirectusCoreSingleton.instance.auth.login(email: "manager@test.com", password: "12345678");
+                      //  await DirectusCoreSingleton.instance.auth.staticToken(token);
                        stopLoader();
                     print(DirectusCoreSingleton.instance.auth.currentUser);
                     } catch (e) {
+                       stopLoader();
+                       EasyLoading.showError("Erreur d'authentification");
                       print((e as DirectusError).message);
+                      print((e as DirectusError).additionalInfo);
+                      print((e as DirectusError).dioError);
+                      print((e as DirectusError).dioError!.requestOptions.data);
                     }
                    
 

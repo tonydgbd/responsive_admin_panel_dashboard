@@ -19,16 +19,16 @@ class PanelRightScreen extends StatefulWidget {
 
 class _PanelRightScreenState extends State<PanelRightScreen> {
   final List<Product> _products = [
-    Product(name: "LED Submersible Lights", enable: true),
-    Product(name: "Portable Projector", enable: true),
-    Product(name: "Bluetooth Speaker", enable: true),
-    Product(name: "Smart Watch", enable: true),
-    Product(name: "Temporary Tattoos", enable: true),
-    Product(name: "Bookends", enable: true),
-    Product(name: "Vegetable Chopper", enable: true),
-    Product(name: "Neck Massager", enable: true),
-    Product(name: "Facial Cleanser", enable: true),
-    Product(name: "Back Cushion", enable: true),
+    // Product(name: "LED Submersible Lights", enable: true),
+    // Product(name: "Portable Projector", enable: true),
+    // Product(name: "Bluetooth Speaker", enable: true),
+    // Product(name: "Smart Watch", enable: true),
+    // Product(name: "Temporary Tattoos", enable: true),
+    // Product(name: "Bookends", enable: true),
+    // Product(name: "Vegetable Chopper", enable: true),
+    // Product(name: "Neck Massager", enable: true),
+    // Product(name: "Facial Cleanser", enable: true),
+    // Product(name: "Back Cushion", enable: true),
   ];
   @override
   Widget build(BuildContext context) {
@@ -80,22 +80,7 @@ class _PanelRightScreenState extends State<PanelRightScreen> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Column(
-                  children: List.generate(
-                      _products.length,
-                      (index) => SwitchListTile.adaptive(
-                            title: Text(
-                              _products[index].name,
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                            value: _products[index].enable,
-                            onChanged: (newValue) {
-                              setState(() {
-                                _products[index].enable = newValue;
-                              });
-                            },
-                          ))),
-            ),
+              ),
           )
         ]),
       ),

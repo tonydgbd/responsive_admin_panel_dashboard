@@ -1,13 +1,17 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:responsive_admin_panel_dashboard/controllers/data_controller.dart';
 
 import '../resource/app_colors.dart';
 
 class BarChartSample2 extends StatefulWidget {
-  BarChartSample2({super.key});
+  BarChartSample2({super.key, required this.rawBarGroups,required  this.showingBarGroups });
   final Color leftBarColor = const Color(0xff53fdd7);
   final Color rightBarColor = const Color(0xffff5182);
   final Color avgColor = const Color(0xFFFF683B).avg(const Color(0xFFE80054));
+     List<BarChartGroupData> rawBarGroups;
+   List<BarChartGroupData> showingBarGroups;
   @override
   State<StatefulWidget> createState() => BarChartSample2State();
 }
@@ -15,89 +19,74 @@ class BarChartSample2 extends StatefulWidget {
 class BarChartSample2State extends State<BarChartSample2> {
   final double width = 7;
 
-  late List<BarChartGroupData> rawBarGroups;
-  late List<BarChartGroupData> showingBarGroups;
+
 
   int touchedGroupIndex = -1;
 
   @override
   void initState() {
     super.initState();
-    final barGroup1 = makeGroupData(0, 5, 12);
-    final barGroup2 = makeGroupData(1, 16, 12);
-    final barGroup3 = makeGroupData(2, 18, 5);
-    final barGroup4 = makeGroupData(3, 20, 16);
-    final barGroup5 = makeGroupData(4, 17, 6);
-    final barGroup6 = makeGroupData(5, 19, 1.5);
-    final barGroup7 = makeGroupData(6, 10, 1.5);
-
-    final items = [
-      barGroup1,
-      barGroup2,
-      barGroup3,
-      barGroup4,
-      barGroup5,
-      barGroup6,
-      barGroup7,
-    ];
-
-    rawBarGroups = items;
-
-    showingBarGroups = rawBarGroups;
+    // final barGroup4 = makeGroupData(3, DataController.instance.tickets.where((p0) => p0.dateCreated.isAfter(DateTime.now().add(Duration(days: -15))) && p0.dateCreated.isBefore(DateTime.now().add(Duration(days: 15)))).where((element) => element.dateCreated.weekday==1 ).length.toDouble(), DataController.instance.tickets.where((p0) => p0.dateCreated.isAfter(DateTime.now().add(Duration(days: -3))) && p0.dateCreated.isBefore(DateTime.now().add(Duration(days: 3)))).where((element) => element.dateCreated.weekday==4 ).fold(0, (previousValue, element) => previousValue+element.prix).toDouble());
+    
   }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: AppColors.purpleLight,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      elevation: 3,
-      child: AspectRatio(
-        aspectRatio: 1.1,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const <Widget>[
-                  //makeTransactionsIcon(),
-                  Text(
-                    'Monthly Profits',
-                    style: TextStyle(color: Colors.white, fontSize: 18),
-                  ),
-                  Text(
-                    r'$345,462',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.start,
+ return Obx(() {
+      int total= 0;
+      DataController.instance.tickets.where((p0) => p0.dateCreated.isAfter(DateTime.now().copyWith(day: 1)) && p0.dateCreated.isBefore(DateTime.now().copyWith(day: 31))).toList().forEach((element) {
+        total += element.prix;
+      });
+      return  Card(
+          color: AppColors.purpleLight,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          elevation: 3,
+          child: AspectRatio(
+            aspectRatio: 1.1,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  const Text(
-                    'Of ',
-                    style: TextStyle(color: Color(0xff77839a), fontSize: 16),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children:  <Widget>[
+                      //makeTransactionsIcon(),
+                      Text(
+                        "Total mensuel",
+                        style: TextStyle(color: Colors.white, fontSize: 18),
+                      ),
+                      Text(
+                        " "+ total.toString() + " XOF ",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      const Text(
+                        'de ',
+                        style: TextStyle(color: Color(0xff77839a), fontSize: 16),
                   ),
                   Text(
-                    'Sales ',
+                    'ventes ',
                     style: TextStyle(color: widget.leftBarColor, fontSize: 16),
                   ),
                   const Text(
-                    'And ',
+                    'et ',
                     style: TextStyle(color: Color(0xff77839a), fontSize: 16),
                   ),
                   Text(
-                    'Orders',
+                    'Ticket',
                     style: TextStyle(color: widget.rightBarColor, fontSize: 16),
                   ),
                 ],
@@ -118,7 +107,7 @@ class BarChartSample2State extends State<BarChartSample2> {
                         if (response == null || response.spot == null) {
                           setState(() {
                             touchedGroupIndex = -1;
-                            showingBarGroups = List.of(rawBarGroups);
+                            widget.showingBarGroups = List.of(widget.rawBarGroups);
                           });
                           return;
                         }
@@ -128,25 +117,25 @@ class BarChartSample2State extends State<BarChartSample2> {
                         setState(() {
                           if (!event.isInterestedForInteractions) {
                             touchedGroupIndex = -1;
-                            showingBarGroups = List.of(rawBarGroups);
+                            widget.showingBarGroups = List.of(widget.rawBarGroups);
                             return;
                           }
-                          showingBarGroups = List.of(rawBarGroups);
+                          widget.showingBarGroups = List.of(widget.rawBarGroups);
                           if (touchedGroupIndex != -1) {
                             var sum = 0.0;
                             for (final rod
-                                in showingBarGroups[touchedGroupIndex]
+                                in widget.showingBarGroups[touchedGroupIndex]
                                     .barRods) {
                               sum += rod.toY;
                             }
                             final avg = sum /
-                                showingBarGroups[touchedGroupIndex]
+                                widget.showingBarGroups[touchedGroupIndex]
                                     .barRods
                                     .length;
 
-                            showingBarGroups[touchedGroupIndex] =
-                                showingBarGroups[touchedGroupIndex].copyWith(
-                              barRods: showingBarGroups[touchedGroupIndex]
+                            widget.showingBarGroups[touchedGroupIndex] =
+                                widget.showingBarGroups[touchedGroupIndex].copyWith(
+                              barRods: widget.showingBarGroups[touchedGroupIndex]
                                   .barRods
                                   .map((rod) {
                                 return rod.copyWith(
@@ -184,7 +173,7 @@ class BarChartSample2State extends State<BarChartSample2> {
                     borderData: FlBorderData(
                       show: false,
                     ),
-                    barGroups: showingBarGroups,
+                    barGroups: widget.showingBarGroups,
                     gridData: FlGridData(show: false),
                   ),
                 ),
@@ -197,6 +186,7 @@ class BarChartSample2State extends State<BarChartSample2> {
         ),
       ),
     );
+  });
   }
 
   Widget leftTitles(double value, TitleMeta meta) {

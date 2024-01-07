@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:responsive_admin_panel_dashboard/controllers/data_controller.dart';
 import 'package:responsive_admin_panel_dashboard/resource/app_colors.dart';
 
 import '../resource/app_padding.dart';
@@ -63,27 +65,28 @@ class _PanelLeftScreenState extends State<PanelLeftScreen> {
                     ),
                     child: Container(
                       width: double.infinity,
-                      child: const ListTile(
+                      child: ListTile(
                         title: Text(
-                          "Products Sold",
+                          "Tickets Vendus",
                           style: TextStyle(color: Colors.white),
                         ),
-                        subtitle: Text(
-                          "18% of Products Sold",
-                          style: TextStyle(color: Colors.white),
-                        ),
+                        // subtitle: Text(
+                        //   // "18% of Products Sold",
+                        //   style: TextStyle(color: Colors.white),
+                        // ),
                         trailing: Chip(
-                          label: Text(
-                            "4,500",
-                            style: TextStyle(color: Colors.white),
-                          ),
+                          label: Obx(() => Text(
+                                DataController.instance.tickets.length
+                                    .toString(),
+                                style: TextStyle(color: Colors.white),
+                              )),
                         ),
                       ),
                     ),
                   ),
                 ),
-               const LineChartSample2(),
-               const PieChartSample2(),
+                const LineChartSample2(),
+                const PieChartSample2(),
                 Padding(
                     padding: const EdgeInsets.only(
                         left: AppPadding.P10 / 2,
@@ -96,20 +99,15 @@ class _PanelLeftScreenState extends State<PanelLeftScreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: Column(
-                          children: List.generate(
-                              _todos.length,
-                              (index) => CheckboxListTile(
+                      child: Obx(() => Column(
+                          children: DataController.instance.tickets.map((ticket) => ListTile(
                                   title: Text(
-                                    _todos[index].name,
+                                    " Destination ${DataController.instance.trajets.firstWhere((element) => element.id== ticket.trajetId).villeArrive} - ${DataController.instance.trajets.firstWhere((element) => element.id== ticket.trajetId).villeDepart} - ${ticket.dateDepart} - ${ticket.heureDepart} - ${ticket.prix} FCFA}" ,
                                     style: const TextStyle(color: Colors.white),
                                   ),
-                                  value: _todos[index].enable,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _todos[index].enable = value ?? true;
-                                    });
-                                  }))),
+                                  
+                                  )).toList()
+                                  )),
                     ))
               ],
             ),

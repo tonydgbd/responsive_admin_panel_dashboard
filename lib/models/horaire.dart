@@ -1,6 +1,8 @@
+import 'package:responsive_admin_panel_dashboard/controllers/auth_controller.dart';
+
 class Horaire {
   final int id;
-  final String userCreated;
+  final String? userCreated;
   final DateTime? dateCreated;
   final String? userUpdated;
   final DateTime? dateUpdated;
@@ -26,7 +28,7 @@ class Horaire {
       id: json['id'] as int,
       trajet_id:json['trajet_id'] as int,
       nombrePlace: json['nombre_place'] as int,
-      userCreated: json['user_created'] as String,
+      userCreated: json['user_created'] ,
       dateCreated: json['date_created'] !=null ? DateTime.parse(json['date_created'] as String) : null,
       userUpdated: json['user_updated'] as String? ?? null,
       dateUpdated: json['date_updated'] !=null? DateTime.parse(json['date_updated'] as String) : null,
@@ -39,6 +41,7 @@ class Horaire {
   tojson(){
     return {
       "trajet_id":trajet_id,
+      "user_created": AuthController.instance.user.value!.id,
       "nombre_place":nombrePlace,
       "user_updated":userUpdated,
       "date_updated":dateUpdated.toString(),

@@ -15,10 +15,10 @@ class ButtonsInfo {
 
 List<ButtonsInfo> _buttonInfo = [
   ButtonsInfo(title: "Home", icon: Icons.home),
-  ButtonsInfo(title: "Gestion des Gares", icon: Icons.business),
+  // ButtonsInfo(title: "Gestion des Gares", icon: Icons.business),
   ButtonsInfo(title: "Gestion des trajets", icon: Icons.trip_origin),
   ButtonsInfo(title: "Billeterie", icon: Icons.airplane_ticket),
-  ButtonsInfo(title: "Sales", icon: Icons.sell),
+  ButtonsInfo(title: "Staff", icon: Icons.sell),
   ButtonsInfo(title: "Marketing", icon: Icons.mark_email_read),
   ButtonsInfo(title: "Security", icon: Icons.verified_user),
   ButtonsInfo(title: "Users", icon: Icons.supervised_user_circle_rounded),

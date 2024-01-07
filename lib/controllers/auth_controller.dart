@@ -14,30 +14,31 @@ class AuthController extends GetxController{
     static DirectusCore sdk = DirectusCoreSingleton.instance;
     Rx<User?> user = null.obs;
   @override
-  void onInit() {
-    // TODO: implement onInit
-    super.onInit();
-     
-   
-  }
-  @override
-   onReady() {  
-    super.onReady();
+   onInit() {
+     super.onInit();
      setinitalScreen();
     DirectusCoreSingleton.instance.auth.onChange((type, event) async{
       print(type);
+      
       if(type=="login"){
         await fetchUserdata();
+         await DataController.instance.getCompany();
+
         Get.to(WidgetTree());
       }
       else if( event == null){
         Get.to(AuthScreen());
       }else{
+        
         await fetchUserdata();
+         await DataController.instance.getCompany();
+
         Get.to(WidgetTree());
       }
     });
    }
+
+  
 
   fetchUserdata()async{
     var response = await sdk.auth.currentUser!.client.request('/users/me');
@@ -50,14 +51,13 @@ class AuthController extends GetxController{
     Get.to(AuthScreen());
   }
 
-  setinitalScreen()async {
+  setinitalScreen() async {
     var value = DirectusCoreSingleton.instance.auth.currentUser;
       if(value !=null){
          await fetchUserdata();
          await DataController.instance.getCompany();
         Get.to(WidgetTree());
       }else{
-       
         Get.to(AuthScreen());
       }
     

@@ -5,15 +5,16 @@ import 'package:responsive_admin_panel_dashboard/controllers/screenscontroller.d
 import 'package:responsive_admin_panel_dashboard/resource/app_colors.dart';
 import 'package:responsive_admin_panel_dashboard/screen/drawer_screen.dart';
 import 'package:responsive_admin_panel_dashboard/screen/gare_management/gare_list.dart';
+import 'package:responsive_admin_panel_dashboard/screen/marketing_screen.dart';
 import 'package:responsive_admin_panel_dashboard/screen/panel_center_screen.dart';
+import 'package:responsive_admin_panel_dashboard/screen/staf_management%20copy.dart';
 import 'package:responsive_admin_panel_dashboard/screen/trajet_management/trjaet_list.dart';
 import 'package:responsive_admin_panel_dashboard/widget/custom_app_bar.dart';
 import 'package:responsive_admin_panel_dashboard/widget/responsive_layout.dart';
 
 import 'screen/booking/booking_screen.dart';
 import 'screen/dashboard/dashboard.dart';
-import 'screen/panel_left_screen.dart';
-import 'screen/panel_right_screen.dart';
+
 
 class WidgetTree extends StatefulWidget {
   WidgetTree({super.key});
@@ -31,9 +32,11 @@ class _WidgetTreeState extends State<WidgetTree> {
   ];
   final List<Widget> _screens =  [
     DashboardScreen(),
-    StationScreen(),
+    // StationScreen(),
     TrajetScreen(),
-    BookingScreen()
+    BookingScreen(),
+    StafManagementScreen(),
+    MarketingScreen()
   ];
 
   @override

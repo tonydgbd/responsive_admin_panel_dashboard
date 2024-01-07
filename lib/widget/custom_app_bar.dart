@@ -6,6 +6,7 @@ import 'package:responsive_admin_panel_dashboard/controllers/screenscontroller.d
 import 'package:responsive_admin_panel_dashboard/resource/app_colors.dart';
 import 'package:responsive_admin_panel_dashboard/resource/app_padding.dart';
 import 'package:responsive_admin_panel_dashboard/utils/contants/colors.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'responsive_layout.dart';
 
 List<String> _buttonNames = ["Apercu", "Revenu", "Vente", "Gestions"];
@@ -132,7 +133,8 @@ class _CustomAppBarState extends State<CustomAppBar> {
           color: Colors.white,
           iconSize: 30,
           onPressed: () {
-            DataController.instance.refreshUI();
+            // DataController.instance.refreshUI();
+            // Supabase.instance.client.from("Users").select("*");
           },
           icon: const Icon(Icons.refresh),
         ),

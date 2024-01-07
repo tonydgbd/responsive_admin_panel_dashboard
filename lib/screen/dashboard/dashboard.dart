@@ -19,7 +19,7 @@ class DashboardScreen extends StatelessWidget {
         phone: CoreController.instance.tabIndex == 0
             ? const PanelLeftScreen()
             : CoreController.instance.tabIndex == 1
-                ? const PanelCenterScreen()
+                ?  PanelCenterScreen()
                 : const PanelRightScreen(),
         tablet: Row(
           children: const [
@@ -28,7 +28,7 @@ class DashboardScreen extends StatelessWidget {
           ],
         ),
         largeTablet: Row(
-          children: const [
+          children:  [
             Expanded(child: PanelLeftScreen()),
             Expanded(child: PanelCenterScreen()),
             Expanded(child: PanelRightScreen())
